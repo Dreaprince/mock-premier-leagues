@@ -87,7 +87,8 @@ Response:
       }
 }
 
-#### Login - `POST /auth/login`
+Login - POST /auth/login
+
 Logs in a user and returns an access token.
 
   json
@@ -97,7 +98,7 @@ Logs in a user and returns an access token.
 }
 
    Response:
-   
+
  json
 
 {
@@ -114,12 +115,13 @@ Logs in a user and returns an access token.
     }
 }
 
-#### Get All Users (Admin Only) - GET /auth/users
+Get All Users (Admin Only) - GET /auth/users
+
 This endpoint allows admins to retrieve all users in the system.
 
   Response:
 
-```json
+  json
 {
   "statusCode": "00",
   "message": "Users retrieved successfully",
