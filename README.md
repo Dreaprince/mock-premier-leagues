@@ -72,7 +72,7 @@ This JSON object represents a user with roles that can be either "admin" or "use
 
 Response:
 
-```json
+  json
 {
       "statusCode": "00",
       "message": "Signup successful",
@@ -90,7 +90,7 @@ Response:
 #### Login - `POST /auth/login`
 Logs in a user and returns an access token.
 
-```json
+  json
 {
   "email": "user@example.com",
   "password": "Password123!"
@@ -98,7 +98,7 @@ Logs in a user and returns an access token.
 
 Response:
 
-```json
+ json
 {
   "statusCode": "00",
   "message": "Login successful",
