@@ -7,48 +7,56 @@ import { UserModel } from '../models/user.model';
 // Signup function for both Admin and User accounts
 export const signup = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
   try {
-    // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log("Validation failed");
       return res.status(400).json({ errors: errors.array() });
     }
-  console.log("reach here")
+
     const { email, password, fullname, role } = req.body;
-    
+
+    console.log("Checking if user exists");
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
+      console.log("User exists");
       return next(new Error('Email already exists.'));
     }
 
-    // Hash the password
+    console.log("Hashing password");
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create a new user
     const newUser = new UserModel({
       fullname,
       email,
       password: hashedPassword,
-      role
+      role,
     });
 
+    console.log("Saving user");
     await newUser.save();
 
-    // Generate JWT token
+    console.log("Generating token");
     const accessToken = jwt.sign(
       {
         id: newUser._id,
         email: newUser.email,
         fullname: newUser.fullname,
-        role: newUser.role
+        role: newUser.role,
       },
       process.env.JWT_SECRET!, 
-      {
-        expiresIn: '1d', 
-      }
+      { expiresIn: '1d' }
     );
 
-    // Respond with the newly created user (excluding the password) and token
+    console.log("Responding with new user and token");
+
+    // Use a conditional to check the password property
+    if (!newUser.password) {
+      console.log('Password not found in the user object');
+      return next(new Error('Password is missing.'));
+    }
+
     const { password: passwordHash, ...userResponse } = newUser.toObject();
+
     return res.status(201).json({
       statusCode: '00',
       message: 'Signup successful',
@@ -58,7 +66,8 @@ export const signup = async (req: Request, res: Response, next: NextFunction): P
       },
     });
   } catch (error) {
-    return next(error); // Pass the error to Express's error handler
+    console.log("Error occurred: ", error);
+    return next(error);
   }
 };
 
