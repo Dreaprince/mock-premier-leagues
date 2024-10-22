@@ -1,0 +1,32 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore any logs
+*.log
+
+# Ignore other non-essential files
+.git
+.gitignore
+Dockerfile
+.dockerignore
+README.md
+LICENSE
+
+# Ignore temporary files
+tmp
+temp
+
+# Ignore development-specific files
+*.env.development
+*.config.development
+
+# Ignore build output directories
+dist/
+build/
+out/
+
+# Ignore test and documentation files
+tests/
+test/
+coverage/
+*.md
