@@ -2,86 +2,148 @@ import { body, query } from 'express-validator';
 import { TeamModel } from '../models/team.model';
 import { UserModel } from '../models/user.model';
 
-
 export const validate = (method: string) => {
     switch (method) {
         // Team-related validations
         case 'addTeam': {
             return [
-                body('name', 'Team name is required').exists().isString().withMessage('Team name must be a string'),
-                body('name', 'Team name should be at least 3 characters long').isLength({ min: 3 }),
+                body('name')
+                    .exists({ checkFalsy: true }).withMessage('Team name is required')
+                    .isString().withMessage('Team name must be a string')
+                    .isLength({ min: 3 }).withMessage('Team name should be at least 3 characters long'),
             ];
         }
         case 'editTeam': {
             return [
-                body('name', 'Team name is required').exists().isString().withMessage('Team name must be a string'),
-                body('name', 'Team name should be at least 3 characters long').isLength({ min: 3 }),
+                body('name')
+                    .exists({ checkFalsy: true }).withMessage('Team name is required')
+                    .isString().withMessage('Team name must be a string')
+                    .isLength({ min: 3 }).withMessage('Team name should be at least 3 characters long'),
             ];
         }
-
         // Auth-related validations
         case 'signup': {
             return [
-                body('fullName', 'Full name is required').exists().isString(),
-                body('email', 'Invalid email address').exists().isEmail().custom(async (value) => {
-                    const user = await UserModel.findOne({ email: value });
-                    if (user) {
-                        throw new Error('Email already in use');
-                    }
-                }),
-                body('password', 'Password must be at least 6 characters long').exists().isLength({ min: 6 }),
+                // Validate fullName
+                body('fullname')
+                    .exists({ checkFalsy: true }).withMessage('Full name is required')
+                    .isString().withMessage('Full name must be a string'),
+        
+                // Validate email
+                body('email')
+                    .exists({ checkFalsy: true }).withMessage('Email is required')
+                    .isEmail().withMessage('Invalid email address')
+                    .custom(async (value) => {
+                        const user = await UserModel.findOne({ email: value });
+                        if (user) {
+                            throw new Error('Email already in use');
+                        }
+                    }),
+        
+                // Validate password
+                body('password')
+                    .exists({ checkFalsy: true }).withMessage('Password is required')
+                    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+        
+                // Validate role
+                body('role')
+                    .exists({ checkFalsy: true }).withMessage('Role is required')
+                    .isString().withMessage('Role must be a string')
+                    .isIn(['admin', 'user']).withMessage('Role must be either "admin" or "user"'),
             ];
         }
         case 'login': {
             return [
-                body('email', 'Invalid email address').exists().isEmail(),
-                body('password', 'Password is required').exists().isString(),
+                // Validate email
+                body('email')
+                    .exists({ checkFalsy: true }).withMessage('Email is required')
+                    .isEmail().withMessage('Invalid email address'),
+        
+                // Validate password
+                body('password')
+                    .exists({ checkFalsy: true }).withMessage('Password is required')
+                    .isString().withMessage('Password must be a string'),
             ];
         }
-
         // Fixture-related validations
         case 'addFixture': {
             return [
-                body('homeTeam', 'Home team is required').exists().isMongoId().custom(async (value) => {
-                    const team = await TeamModel.findById(value);
-                    if (!team) {
-                        throw new Error('Invalid home team');
-                    }
-                }),
-                body('awayTeam', 'Away team is required').exists().isMongoId().custom(async (value) => {
-                    const team = await TeamModel.findById(value);
-                    if (!team) {
-                        throw new Error('Invalid away team');
-                    }
-                }),
-                body('date', 'Date is required and must be a valid date').exists().isISO8601(),
-                body('status', 'Status must be either pending or completed').optional().isIn(['pending', 'completed']),
+                // Validate homeTeam (must exist and be a valid MongoDB ID)
+                body('homeTeam')
+                    .exists({ checkFalsy: true }).withMessage('Home team is required')
+                    .isMongoId().withMessage('Invalid home team ID')
+                    .custom(async (value) => {
+                        const team = await TeamModel.findById(value);
+                        if (!team) {
+                            throw new Error('Invalid home team');
+                        }
+                    }),
+        
+                // Validate awayTeam (must exist and be a valid MongoDB ID)
+                body('awayTeam')
+                    .exists({ checkFalsy: true }).withMessage('Away team is required')
+                    .isMongoId().withMessage('Invalid away team ID')
+                    .custom(async (value) => {
+                        const team = await TeamModel.findById(value);
+                        if (!team) {
+                            throw new Error('Invalid away team');
+                        }
+                    }),
+        
+                // Validate date (must be a valid ISO 8601 date)
+                body('date')
+                    .exists({ checkFalsy: true }).withMessage('Date is required')
+                    .isISO8601().withMessage('Date must be a valid ISO 8601 date'),
+        
+                // Validate status (must be either 'pending' or 'completed', optional)
+                body('status')
+                    .optional()
+                    .isIn(['pending', 'completed']).withMessage('Status must be either pending or completed'),
             ];
         }
         case 'editFixture': {
             return [
-                body('homeTeam', 'Home team is required').exists().isMongoId().custom(async (value) => {
-                    const team = await TeamModel.findById(value);
-                    if (!team) {
-                        throw new Error('Invalid home team');
-                    }
-                }),
-                body('awayTeam', 'Away team is required').exists().isMongoId().custom(async (value) => {
-                    const team = await TeamModel.findById(value);
-                    if (!team) {
-                        throw new Error('Invalid away team');
-                    }
-                }),
-                body('date', 'Date is required and must be a valid date').exists().isISO8601(),
-                body('status', 'Status must be either pending or completed').optional().isIn(['pending', 'completed']),
+                // Validate homeTeam (must exist and be a valid MongoDB ID)
+                body('homeTeam')
+                    .exists({ checkFalsy: true }).withMessage('Home team is required')
+                    .isMongoId().withMessage('Invalid home team ID')
+                    .custom(async (value) => {
+                        const team = await TeamModel.findById(value);
+                        if (!team) {
+                            throw new Error('Invalid home team');
+                        }
+                    }),
+        
+                // Validate awayTeam (must exist and be a valid MongoDB ID)
+                body('awayTeam')
+                    .exists({ checkFalsy: true }).withMessage('Away team is required')
+                    .isMongoId().withMessage('Invalid away team ID')
+                    .custom(async (value) => {
+                        const team = await TeamModel.findById(value);
+                        if (!team) {
+                            throw new Error('Invalid away team');
+                        }
+                    }),
+        
+                // Validate date (must be a valid ISO 8601 date)
+                body('date')
+                    .exists({ checkFalsy: true }).withMessage('Date is required')
+                    .isISO8601().withMessage('Date must be a valid ISO 8601 date'),
+        
+                // Validate status (must be either 'pending' or 'completed', optional)
+                body('status')
+                    .optional()
+                    .isIn(['pending', 'completed']).withMessage('Status must be either pending or completed'),
             ];
         }
         case 'searchFixtures': {
             return [
-                query('search', 'Search query is required').optional().isString(),
+                // Validate that search is optional, but if provided, it must be a string
+                query('search')
+                    .optional()
+                    .isString().withMessage('Search query must be a string'),
             ];
         }
-
         default:
             return [];
     }
