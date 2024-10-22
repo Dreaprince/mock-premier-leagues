@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { addFixture, removeFixture, editFixture, viewFixture, viewFixturesByStatus, searchFixtures } from '../controllers/fixture.controller';
+import { addFixture, removeFixture, editFixture, viewFixture, viewFixturesByStatus, searchFixtures, fetchAllFixtures, updateFixtureScore } from '../controllers/fixture.controller';
 import authMiddleware from '../middlewares/auth.middleware';
 import rolesMiddleware from '../middlewares/roles.middleware';
 import { validate } from '../middlewares/validator';
@@ -38,7 +38,7 @@ router.put('/:id', validate("editFixture"), authMiddleware, rolesMiddleware(['ad
 // User & Admin routes
 
 // View a specific fixture
-router.get('/:id', authMiddleware, async (req, res, next) => {
+router.get('/one/:id', authMiddleware, async (req, res, next) => {
   try {
     await viewFixture(req, res, next);
   } catch (error) {
@@ -54,6 +54,23 @@ router.get('/', validate("searchFixtures"), authMiddleware, async (req: any, res
     next(error); // Pass error to error-handling middleware
   }
 });
+
+// Fetch all fixtures
+router.get('/all', authMiddleware, async (req, res, next) => {
+    try {
+      await fetchAllFixtures(req, res, next);
+    } catch (error) {
+      next(error); 
+    }
+});
+
+  router.put('/score/:id', authMiddleware, rolesMiddleware(['admin']), validate('updateFixtureScore'), async (req: any, res: any, next: any) => {
+    try {
+      await updateFixtureScore(req, res, next);
+    } catch (error) {
+      next(error);
+    }
+  });
 
 // Search fixtures/teams
 router.get('/search', authMiddleware, async (req, res, next) => {

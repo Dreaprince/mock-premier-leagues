@@ -28,7 +28,7 @@ export const validate = (method: string) => {
                 body('fullname')
                     .exists({ checkFalsy: true }).withMessage('Full name is required')
                     .isString().withMessage('Full name must be a string'),
-        
+
                 // Validate email
                 body('email')
                     .exists({ checkFalsy: true }).withMessage('Email is required')
@@ -39,12 +39,12 @@ export const validate = (method: string) => {
                             throw new Error('Email already in use');
                         }
                     }),
-        
+
                 // Validate password
                 body('password')
                     .exists({ checkFalsy: true }).withMessage('Password is required')
                     .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
-        
+
                 // Validate role
                 body('role')
                     .exists({ checkFalsy: true }).withMessage('Role is required')
@@ -58,7 +58,7 @@ export const validate = (method: string) => {
                 body('email')
                     .exists({ checkFalsy: true }).withMessage('Email is required')
                     .isEmail().withMessage('Invalid email address'),
-        
+
                 // Validate password
                 body('password')
                     .exists({ checkFalsy: true }).withMessage('Password is required')
@@ -69,7 +69,7 @@ export const validate = (method: string) => {
         case 'addFixture': {
             return [
                 // Validate homeTeam (must exist and be a valid MongoDB ID)
-                body('homeTeam')
+                body('homeTeamId')
                     .exists({ checkFalsy: true }).withMessage('Home team is required')
                     .isMongoId().withMessage('Invalid home team ID')
                     .custom(async (value) => {
@@ -78,9 +78,9 @@ export const validate = (method: string) => {
                             throw new Error('Invalid home team');
                         }
                     }),
-        
+
                 // Validate awayTeam (must exist and be a valid MongoDB ID)
-                body('awayTeam')
+                body('awayTeamId')
                     .exists({ checkFalsy: true }).withMessage('Away team is required')
                     .isMongoId().withMessage('Invalid away team ID')
                     .custom(async (value) => {
@@ -89,22 +89,25 @@ export const validate = (method: string) => {
                             throw new Error('Invalid away team');
                         }
                     }),
-        
+
                 // Validate date (must be a valid ISO 8601 date)
                 body('date')
-                    .exists({ checkFalsy: true }).withMessage('Date is required')
-                    .isISO8601().withMessage('Date must be a valid ISO 8601 date'),
-        
+                    .exists({ checkFalsy: true })
+                    .withMessage('Date is required')
+                    .isISO8601({ strict: true, strictSeparator: true })
+                    .withMessage('Date must be in ISO 8601 format, including both date and time. For example: "2024-10-23T11:30:00".'),
+
+
                 // Validate status (must be either 'pending' or 'completed', optional)
                 body('status')
                     .optional()
-                    .isIn(['pending', 'completed']).withMessage('Status must be either pending or completed'),
+                    .isIn(['pending', 'ongoing', 'completed']).withMessage('Status must be either pending or completed'),
             ];
         }
         case 'editFixture': {
             return [
                 // Validate homeTeam (must exist and be a valid MongoDB ID)
-                body('homeTeam')
+                body('homeTeamId')
                     .exists({ checkFalsy: true }).withMessage('Home team is required')
                     .isMongoId().withMessage('Invalid home team ID')
                     .custom(async (value) => {
@@ -113,9 +116,9 @@ export const validate = (method: string) => {
                             throw new Error('Invalid home team');
                         }
                     }),
-        
+
                 // Validate awayTeam (must exist and be a valid MongoDB ID)
-                body('awayTeam')
+                body('awayTeamId')
                     .exists({ checkFalsy: true }).withMessage('Away team is required')
                     .isMongoId().withMessage('Invalid away team ID')
                     .custom(async (value) => {
@@ -124,16 +127,27 @@ export const validate = (method: string) => {
                             throw new Error('Invalid away team');
                         }
                     }),
-        
+
                 // Validate date (must be a valid ISO 8601 date)
                 body('date')
-                    .exists({ checkFalsy: true }).withMessage('Date is required')
-                    .isISO8601().withMessage('Date must be a valid ISO 8601 date'),
-        
+                    .exists({ checkFalsy: true })
+                    .withMessage('Date is required')
+                    .isISO8601({ strict: true, strictSeparator: true })
+                    .withMessage('Date must be in ISO 8601 format, including both date and time. For example: "2024-10-23T11:30:00".'),
+
+
                 // Validate status (must be either 'pending' or 'completed', optional)
                 body('status')
                     .optional()
-                    .isIn(['pending', 'completed']).withMessage('Status must be either pending or completed'),
+                    .isIn(['pending', 'ongoing', 'completed']).withMessage('Status must be either pending or completed'),
+            ];
+        }
+        case 'updateFixtureScore': {
+            return [
+                body('score', 'Score is required')
+                    .exists()
+                    .matches(/^\d+ \: \d+$/)
+                    .withMessage('Score format is invalid. Expected format: "4 : 2"'),
             ];
         }
         case 'searchFixtures': {
