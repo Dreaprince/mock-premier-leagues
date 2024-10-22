@@ -54,7 +54,6 @@ The Mock Premier League API provides functionality for managing teams, fixtures,
 
 The API uses JWT for authentication and Bearer tokens for secure access. Different roles (admin and user) determine what actions a user can perform.
 
-
 ### Authentication Endpoints
 
 #### Signup - `POST /auth/signup`
@@ -70,22 +69,23 @@ Creates a new admin or user account.
 
 
 
+
 Response:
 
-```json
 {
-      "statusCode": "00",
-      "message": "Signup successful",
-      "data": {
-        "user": {
-          "_id": "userId",
-          "email": "user@example.com",
-          "fullname": "John Doe",
-          "role": "user"
-        },
-        "accessToken": "JWT_TOKEN"
-      }
+  "statusCode": "00",
+  "message": "Signup successful",
+  "data": {
+    "user": {
+      "_id": "userId",
+      "email": "user@example.com",
+      "fullname": "John Doe",
+      "role": "user"
+    },
+    "accessToken": "JWT_TOKEN"
+  }
 }
+
 
 #### Login - `POST /auth/login`
 Logs in a user and returns an access token.
