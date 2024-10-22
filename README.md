@@ -55,6 +55,7 @@ The Mock Premier League API provides functionality for managing teams, fixtures,
 The API uses JWT for authentication and Bearer tokens for secure access. Different roles (admin and user) determine what actions a user can perform.
 
 
+
 ### Authentication Endpoints
 
 #### Signup - `POST /auth/signup`
@@ -72,8 +73,9 @@ Creates a new admin or user account.
 
 Response:
 
-```json
-{
+json
+
+    {
       "statusCode": "00",
       "message": "Signup successful",
       "data": {
@@ -85,12 +87,16 @@ Response:
         },
         "accessToken": "JWT_TOKEN"
       }
-}
+    }
 
-#### Login - `POST /auth/login`
+Login - POST /auth/login
+
 Logs in a user and returns an access token.
 
-```json
+    Request Body:
+
+    json
+
 {
   "email": "user@example.com",
   "password": "Password123!"
@@ -98,27 +104,30 @@ Logs in a user and returns an access token.
 
 Response:
 
-```json
-{
-  "statusCode": "00",
-  "message": "Login successful",
-  "data": {
-      "user": {
-        "_id": "userId",
-        "email": "user@example.com",
-        "fullname": "John Doe",
-        "role": "user"
-      },
-      "accessToken": "JWT_TOKEN"
-    }
-}
+json
 
-#### Get All Users (Admin Only) - GET /auth/users
+    {
+      "statusCode": "00",
+      "message": "Login successful",
+      "data": {
+        "user": {
+          "_id": "userId",
+          "email": "user@example.com",
+          "fullname": "John Doe",
+          "role": "user"
+        },
+        "accessToken": "JWT_TOKEN"
+      }
+    }
+
+Get All Users (Admin Only) - GET /auth/users
+
 This endpoint allows admins to retrieve all users in the system.
 
-  Response:
+    Response:
 
-```json
+    json
+
 {
   "statusCode": "00",
   "message": "Users retrieved successfully",
@@ -146,14 +155,16 @@ Create a new team.
 
     Request Body:
 
-```json
+    json
+
 {
   "name": "Liverpool"
 }
 
 Response:
 
-```json
+json
+
     {
       "message": "Team created successfully",
       "data": {
@@ -162,55 +173,63 @@ Response:
       }
     }
 
-#### Get All Teams - GET /teams
+Get All Teams - GET /teams
+
 Returns a list of all teams.
 
-Response:
+    Response:
 
-```json
-[
-  {
-    "_id": "teamId",
-    "name": "Liverpool"
-  }
-]
+    json
 
-#### Get Team by ID - GET /teams/:id
+    [
+      {
+        "_id": "teamId",
+        "name": "Liverpool"
+      }
+    ]
+
+Get Team by ID - GET /teams/:id
+
 Get details of a specific team by ID.
 
-Response:
+    Response:
 
-```json
-{
-  "_id": "teamId",
-  "name": "Liverpool"
-}
+    json
 
-#### Edit Team - `PUT /teams/:id`
+    {
+      "_id": "teamId",
+      "name": "Liverpool"
+    }
+
+Edit Team - PUT /teams/:id
+
 Update team details.
 
     Request Body:
 
+    json
 
-```json
 {
   "name": "Updated Liverpool"
 }
 
 Response:
 
-```json
-{
-  "_id": "teamId",
-  "name": "Updated Liverpool"
-}
+json
 
-#### Remove Team - `DELETE /teams/:id`
+    {
+      "_id": "teamId",
+      "name": "Updated Liverpool"
+    }
+
+Remove Team - DELETE /teams/:id
+
 Delete a team.
 
-Response:
+    Response:
 
-```json
+    json
+
 {
   "message": "Team deleted successfully"
 }
@@ -227,12 +246,14 @@ Fixture status is dynamically calculated:
     Ongoing: If the match date is in the past but started within the last 110 minutes, the status is ongoing.
     Completed: If the match started more than 110 minutes ago, the status is completed.
 
-#### Add Fixture - `POST /fixtures/`
+Add Fixture - POST /fixtures/
+
 Admins can create a new fixture. Past dates are not allowed.
 
     Request Body:
 
-```json
+    json
+
 {
   "homeTeamId": "homeTeamObjectId",
   "awayTeamId": "awayTeamObjectId",
@@ -241,8 +262,9 @@ Admins can create a new fixture. Past dates are not allowed.
 
 Response:
 
-```json
-{
+json
+
+    {
       "message": "Fixture created successfully",
       "data": {
         "homeTeam": "homeTeamObjectId",
@@ -251,24 +273,28 @@ Response:
         "status": "pending",
         "link": "fixture-unique-link"
       }
-}
+    }
 
-#### Remove Fixture - `DELETE /fixtures/:id`
+Remove Fixture - DELETE /fixtures/:id
+
 Admins can delete a fixture.
 
     Response:
 
-```json
-{
-      "message": "Fixture deleted successfully"
-}
+    json
 
-#### Edit Fixture - `PUT /fixtures/:id`
+    {
+      "message": "Fixture deleted successfully"
+    }
+
+Edit Fixture - PUT /fixtures/:id
+
 Update fixture details. Past dates cannot be set.
 
     Request Body:
 
-```json
+    json
+
 {
   "homeTeamId": "updatedHomeTeamObjectId",
   "awayTeamId": "updatedAwayTeamObjectId",
@@ -277,8 +303,9 @@ Update fixture details. Past dates cannot be set.
 
 Response:
 
-```json
-{
+json
+
+    {
       "message": "Fixture updated successfully",
       "data": {
         "_id": "fixtureObjectId",
@@ -288,15 +315,17 @@ Response:
         "status": "pending",
         "link": "fixture-unique-link"
       }
-}
+    }
 
-#### View a Single Fixture by ID - `GET /fixtures/one/:id`
+View a Single Fixture by ID - GET /fixtures/one/:id
+
 View the details of a fixture by its ID.
 
     Response:
 
-```json
-{
+    json
+
+    {
       "_id": "fixtureObjectId",
       "homeTeam": {
         "_id": "homeTeamObjectId",
@@ -309,16 +338,17 @@ View the details of a fixture by its ID.
       "date": "2024-10-20T15:30:00",
       "status": "pending",
       "link": "fixture-unique-link"
-}
+    }
 
+View Fixtures by Status - GET /fixtures/status?status=pending|ongoing|completed
 
-#### View Fixtures by Status - `GET /fixtures/status?status=pending|ongoing|completed`
 View fixtures based on their status.
 
     Response:
 
-```json
-{
+    json
+
+    {
       "message": "Fixtures with status pending retrieved successfully",
       "data": [
         {
@@ -335,15 +365,17 @@ View fixtures based on their status.
           "status": "pending"
         }
       ]
-}
+    }
 
-#### Fetch All Fixtures - `GET /fixtures/all`
+Fetch All Fixtures - GET /fixtures/all
+
 Retrieve all fixtures.
 
     Response:
 
-```json
-{
+    json
+
+    {
       "message": "Fixtures retrieved successfully",
       "data": [
         {
@@ -361,22 +393,25 @@ Retrieve all fixtures.
           "link": "fixture-unique-link"
         }
       ]
-}
+    }
 
-#### Update Fixture Score - `PUT /fixtures/score/:id`
+Update Fixture Score - PUT /fixtures/score/:id
+
 Admins can update the score of a fixture.
 
     Request Body:
 
-```json
+    json
+
 {
   "score": "2-1"
 }
 
 Response:
 
-```json
-{
+json
+
+    {
       "message": "Fixture score updated successfully",
       "data": {
         "_id": "fixtureObjectId",
@@ -386,10 +421,10 @@ Response:
         "score": "2-1",
         "status": "completed"
       }
-}
+    }
 
-#### Search Endpoints (Public Access)
-#### Search Fixtures/Teams - `GET /fixtures/search`
+Search Endpoints (Public Access)
+Search Fixtures/Teams - GET /fixtures/search
 
 Search for fixtures or teams.
 
@@ -401,8 +436,9 @@ search=Liverpool
 
 Response:
 
-```json
-[
+json
+
+    [
       {
         "_id": "fixtureId",
         "homeTeam": "teamId1",
@@ -410,19 +446,21 @@ Response:
         "date": "2024-10-22T14:00:00.000Z",
         "status": "pending"
       }
-]
+    ]
 
-#### Rate Limiting
+Rate Limiting
+
 Each IP is limited to 100 requests per 15 minutes. After the limit is reached, further requests will be blocked.
 
     Error Response:
 
-```json
-{
-      "message": "Too many requests from this IP, please try again after 15 minutes"
-}
+    json
 
-#### Web Caching (Redis)
+    {
+      "message": "Too many requests from this IP, please try again after 15 minutes"
+    }
+
+Web Caching (Redis)
 
 To improve performance, Redis is used to cache frequently accessed data (such as fixtures). Cache is invalidated when a fixture is updated or deleted.
 Docker Integration
