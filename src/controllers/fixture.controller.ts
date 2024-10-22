@@ -54,7 +54,7 @@ export const addFixture = async (req: Request, res: Response, next: NextFunction
 export const removeFixture = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({ message: 'Invalid team ID' });
+            return res.status(400).json({ message: 'Invalid fixture ID' });
         }
 
         const fixtureId = req.params.id;
@@ -80,13 +80,12 @@ export const editFixture = async (req: Request, res: Response, next: NextFunctio
         }
 
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({ message: 'Invalid team ID' });
+            return res.status(400).json({ message: 'Invalid fixture ID' });
         }
 
-        const fixtureId = req.params.id;
-        const updatedData = req.body;
+        const { score, ...updatedData } = req.body; // Prevent score from being updated here
 
-        const updatedFixture = await FixtureModel.findByIdAndUpdate(fixtureId, updatedData, { new: true });
+        const updatedFixture = await FixtureModel.findByIdAndUpdate(req.params.id, updatedData, { new: true });
 
         if (!updatedFixture) {
             return res.status(404).json({ message: 'Fixture not found' });
@@ -100,6 +99,7 @@ export const editFixture = async (req: Request, res: Response, next: NextFunctio
         return next(error);
     }
 };
+
 
 // View a single fixture by ID (Admin & User)
 export const viewFixture = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
@@ -124,11 +124,31 @@ export const viewFixture = async (req: Request, res: Response, next: NextFunctio
 // View completed or pending fixtures (User & Admin)
 export const viewFixturesByStatus = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
     try {
-        const { status } = req.query; // Expects 'pending' or 'completed'
+        const { status } = req.query; // Expects 'pending', 'ongoing', or 'completed'
+        
+        const now = new Date();
+        let query = {};
 
-        const fixtures = await FixtureModel.find({ status }).populate('homeTeam awayTeam');
+        // Build the query based on the status
+        if (status === 'pending') {
+            query = { date: { $gt: now } };  // Future dates
+        } else if (status === 'ongoing') {
+            const ongoingLimit = new Date(now.getTime() - 110 * 60 * 1000); // Date less than 110 minutes ago
+            query = { date: { $lte: now, $gt: ongoingLimit } }; // Current date and time within 110 minutes
+        } else if (status === 'completed') {
+            const completedLimit = new Date(now.getTime() - 110 * 60 * 1000); // Date more than 110 minutes ago
+            query = { date: { $lt: completedLimit } }; // Dates older than 110 minutes
+        } else {
+            return res.status(400).json({ message: 'Invalid status query parameter' });
+        }
 
-        return res.status(200).json(fixtures);
+        // Find fixtures based on the query and populate the teams
+        const fixtures = await FixtureModel.find(query).populate('homeTeam awayTeam');
+
+        return res.status(200).json({
+            message: `Fixtures with status ${status} retrieved successfully`,
+            data: fixtures,
+        });
     } catch (error) {
         return next(error);
     }
@@ -137,18 +157,15 @@ export const viewFixturesByStatus = async (req: Request, res: Response, next: Ne
 // Fetch all fixtures (Admin & User)
 export const fetchAllFixtures = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
     try {
-        console.log("reacg gere")
         // Fetch all fixtures and populate the homeTeam and awayTeam fields
         const fixtures = await FixtureModel.find().populate('homeTeam awayTeam');
-
-        console.log("reach here:", fixtures)
 
         if (!fixtures || fixtures.length === 0) {
             return res.status(404).json({
                 message: 'No fixtures found',
             });
         }
-        console.log("loading")
+
         return res.status(200).json({
             message: 'Fixtures retrieved successfully',
             data: fixtures,
@@ -160,7 +177,7 @@ export const fetchAllFixtures = async (req: Request, res: Response, next: NextFu
 };
 
   // Update the score of a fixture (Admin only)
-export const updateFixtureScore = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+  export const updateFixtureScore = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
     try {
         // Check for validation errors
         const errors = validationResult(req);
@@ -168,32 +185,37 @@ export const updateFixtureScore = async (req: Request, res: Response, next: Next
             return res.status(400).json({ errors: errors.array() });
         }
 
-        // Validate if the ID is a valid MongoDB ObjectId
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({ message: 'Invalid fixture ID' });
         }
 
         const { score } = req.body;
 
-        // Update the fixture with the score and mark it as completed
-        const updatedFixture = await FixtureModel.findByIdAndUpdate(
-            req.params.id,
-            { score, status: 'completed' },
-            { new: true }
-        );
-
-        if (!updatedFixture) {
+        // Find the fixture
+        const fixture = await FixtureModel.findById(req.params.id);  
+        if (!fixture) {
             return res.status(404).json({ message: 'Fixture not found' });
         }
 
+        // Check if the fixture is ongoing or completed before allowing score updates
+        if (fixture.status !== 'ongoing' && fixture.status !== 'completed') {
+            return res.status(400).json({ message: 'Score can only be updated when the fixture is ongoing or completed' });
+        }
+
+        // Update the score without changing the status
+        fixture.score = score;
+
+        await fixture.save();
+
         return res.status(200).json({
             message: 'Fixture score updated successfully',
-            data: updatedFixture,
+            data: fixture,
         });
     } catch (error) {
         return next(error);
     }
 };
+
 
 // Search fixtures/teams robustly (User & Admin)
 export const searchFixtures = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {

@@ -95,7 +95,15 @@ export const validate = (method: string) => {
                     .exists({ checkFalsy: true })
                     .withMessage('Date is required')
                     .isISO8601({ strict: true, strictSeparator: true })
-                    .withMessage('Date must be in ISO 8601 format, including both date and time. For example: "2024-10-23T11:30:00".'),
+                    .withMessage('Date must be in ISO 8601 format, including both date and time. For example: "2024-10-23T11:30:00".')
+                    .custom((value) => {
+                        const inputDate = new Date(value);
+                        const now = new Date();
+                        if (inputDate <= now) {
+                            throw new Error('Date must be in the future');
+                        }
+                        return true; // Continue if date is valid
+                    }),
 
 
                 // Validate status (must be either 'pending' or 'completed', optional)
@@ -133,13 +141,21 @@ export const validate = (method: string) => {
                     .exists({ checkFalsy: true })
                     .withMessage('Date is required')
                     .isISO8601({ strict: true, strictSeparator: true })
-                    .withMessage('Date must be in ISO 8601 format, including both date and time. For example: "2024-10-23T11:30:00".'),
+                    .withMessage('Date must be in ISO 8601 format, including both date and time. For example: "2024-10-23T11:30:00".')
+                    .custom((value) => {
+                        const inputDate = new Date(value);
+                        const now = new Date();
+                        if (inputDate <= now) {
+                            throw new Error('Date must be in the future');
+                        }
+                        return true; // Continue if date is valid
+                    }),
 
 
                 // Validate status (must be either 'pending' or 'completed', optional)
-                body('status')
-                    .optional()
-                    .isIn(['pending', 'ongoing', 'completed']).withMessage('Status must be either pending or completed'),
+                // body('status')
+                //     .optional()
+                //     .isIn(['pending', 'ongoing', 'completed']).withMessage('Status must be either pending or completed'),
             ];
         }
         case 'updateFixtureScore': {

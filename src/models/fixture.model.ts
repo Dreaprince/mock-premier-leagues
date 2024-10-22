@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { ITeam } from './team.model';
 
+// Define IFixture interface for the fixture document
 export interface IFixture extends Document {
   homeTeam: ITeam;
   awayTeam: ITeam;
@@ -10,6 +11,7 @@ export interface IFixture extends Document {
   link: string;
 }
 
+// Define the FixtureSchema for MongoDB using Mongoose
 const FixtureSchema: Schema = new Schema({
   homeTeam: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
   awayTeam: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
@@ -18,22 +20,32 @@ const FixtureSchema: Schema = new Schema({
   link: { type: String, required: true, unique: true },
 });
 
-// Virtual field to dynamically calculate the status based on the current date and time
-FixtureSchema.virtual('status').get(function (this: IFixture) {
+// Pre-save hook to validate the 'date' field before saving the fixture
+FixtureSchema.pre('save', function (next) {
+  const fixture = this as unknown as mongoose.HydratedDocument<IFixture>; // Corrected typing for fixture
+  const now = new Date();
+
+  // Ensure the date is in the future when creating a new fixture or updating the date
+  if (fixture.isNew || fixture.isModified('date')) {
+    if (fixture.date <= now) {
+      return next(new Error('Date cannot be in the past'));
+    }
+  }
+
+  next();
+});
+
+// Virtual field to dynamically calculate the fixture status
+FixtureSchema.virtual('status').get(function (this: mongoose.HydratedDocument<IFixture>) {
   const now = new Date();
   const fixtureDate = new Date(this.date);
   const timeDifferenceInMinutes = (now.getTime() - fixtureDate.getTime()) / (1000 * 60);
 
-  // Check if the fixture is pending
   if (fixtureDate > now) {
     return 'pending';
-  }
-  // Check if the fixture is ongoing (within 110 minutes of the start)
-  else if (fixtureDate < now && timeDifferenceInMinutes <= 110) {
+  } else if (timeDifferenceInMinutes <= 110) {
     return 'ongoing';
-  }
-  // If the fixture is older than 110 minutes, it's completed
-  else if (timeDifferenceInMinutes > 110) {
+  } else {
     return 'completed';
   }
 });
@@ -42,4 +54,5 @@ FixtureSchema.virtual('status').get(function (this: IFixture) {
 FixtureSchema.set('toJSON', { virtuals: true });
 FixtureSchema.set('toObject', { virtuals: true });
 
+// Export the Fixture model
 export const FixtureModel = mongoose.model<IFixture>('Fixture', FixtureSchema);
