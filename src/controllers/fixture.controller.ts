@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import redisClient from '../config/redis';
 
 // Add a new fixture (Admin only)
+// src/controllers/fixture.controller.ts
 export const addFixture = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
     try {
         // Check for validation errors
@@ -17,11 +18,6 @@ export const addFixture = async (req: Request, res: Response, next: NextFunction
 
         const { homeTeamId, awayTeamId, date, status } = req.body;
 
-        // if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        //     return res.status(400).json({ message: 'Invalid team ID' });
-        // }
-
-        // Validate that both home and away teams exist
         const homeTeam = await TeamModel.findById(homeTeamId);
         const awayTeam = await TeamModel.findById(awayTeamId);
 
@@ -42,6 +38,9 @@ export const addFixture = async (req: Request, res: Response, next: NextFunction
 
         await newFixture.save();
 
+        // Invalidate the cache after a new fixture is added
+        await redisClient.del('all_fixtures');
+
         return res.status(201).json({
             message: 'Fixture created successfully',
             data: newFixture,
@@ -51,19 +50,23 @@ export const addFixture = async (req: Request, res: Response, next: NextFunction
     }
 };
 
+
 // Remove a fixture (Admin only)
+// src/controllers/fixture.controller.ts
 export const removeFixture = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({ message: 'Invalid fixture ID' });
         }
 
-        const fixtureId = req.params.id;
-        const fixture = await FixtureModel.findByIdAndDelete(fixtureId);
+        const fixture = await FixtureModel.findByIdAndDelete(req.params.id);
 
         if (!fixture) {
             return res.status(404).json({ message: 'Fixture not found' });
         }
+
+        // Invalidate the cache after a fixture is deleted
+        await redisClient.del('all_fixtures');
 
         return res.status(200).json({ message: 'Fixture deleted successfully' });
     } catch (error) {
@@ -72,6 +75,7 @@ export const removeFixture = async (req: Request, res: Response, next: NextFunct
 };
 
 // Edit/update a fixture (Admin only)
+// src/controllers/fixture.controller.ts
 export const editFixture = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
     try {
         // Check for validation errors
@@ -91,6 +95,9 @@ export const editFixture = async (req: Request, res: Response, next: NextFunctio
         if (!updatedFixture) {
             return res.status(404).json({ message: 'Fixture not found' });
         }
+
+        // Invalidate the cache after a fixture is updated
+        await redisClient.del('all_fixtures');
 
         return res.status(200).json({
             message: 'Fixture updated successfully',
