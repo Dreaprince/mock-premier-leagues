@@ -8,7 +8,7 @@ import router from './routes/routes'; // Import your routes
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3130;
 
 // Middleware to parse JSON and URL-encoded data
 app.use(express.json()); 
