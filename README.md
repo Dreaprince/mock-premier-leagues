@@ -66,7 +66,6 @@ Creates a new admin or user account.
   "email": "user@example.com",
   "password": "Password123!",
   "fullname": "John Doe",
-  "role": "admin" // or "user"
 }
 
 
@@ -75,19 +74,7 @@ Response:
 
 json
 
-    {
-      "statusCode": "00",
-      "message": "Signup successful",
-      "data": {
-        "user": {
-          "_id": "userId",
-          "email": "user@example.com",
-          "fullname": "John Doe",
-          "role": "user"
-        },
-        "accessToken": "JWT_TOKEN"
-      }
-    }
+
 
 Login - POST /auth/login
 
