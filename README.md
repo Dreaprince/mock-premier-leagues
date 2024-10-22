@@ -72,20 +72,20 @@ Creates a new admin or user account.
 
 Response:
 
+```json
 {
-  "statusCode": "00",
-  "message": "Signup successful",
-  "data": {
-    "user": {
-      "_id": "userId",
-      "email": "user@example.com",
-      "fullname": "John Doe",
-      "role": "user"
-    },
-    "accessToken": "JWT_TOKEN"
-  }
+      "statusCode": "00",
+      "message": "Signup successful",
+      "data": {
+        "user": {
+          "_id": "userId",
+          "email": "user@example.com",
+          "fullname": "John Doe",
+          "role": "user"
+        },
+        "accessToken": "JWT_TOKEN"
+      }
 }
-
 
 #### Login - `POST /auth/login`
 Logs in a user and returns an access token.

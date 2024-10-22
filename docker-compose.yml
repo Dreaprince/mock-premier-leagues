@@ -7,6 +7,7 @@ services:
     environment:
       - MONGO_URI=mongodb://mongo:27017/mydatabase
       - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://localhost:6379
       - SESSION_SECRET=mysecret
     depends_on:
       - mongo
