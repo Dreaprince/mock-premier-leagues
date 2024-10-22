@@ -59,16 +59,16 @@ The API uses JWT for authentication and Bearer tokens for secure access. Differe
 #### Signup - `POST /auth/signup`
 Creates a new admin or user account.
 
+This JSON object represents a user with roles that can be either "admin" or "user".
+- **role**: The user's role within the system. Acceptable values are `"admin"` or `"user"`
+
 ```json
 {
   "email": "user@example.com",
   "password": "Password123!",
   "fullname": "John Doe",
-  "role": "admin" // or "user"
+  "role": "admin"
 }
-
-
-
 
 Response:
 
