@@ -96,9 +96,10 @@ Logs in a user and returns an access token.
   "password": "Password123!"
 }
 
-Response:
-
+   Response:
+   
  json
+
 {
   "statusCode": "00",
   "message": "Login successful",
