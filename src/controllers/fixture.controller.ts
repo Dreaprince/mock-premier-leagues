@@ -39,7 +39,7 @@ export const addFixture = async (req: Request, res: Response, next: NextFunction
         await newFixture.save();
 
         // Invalidate the cache after a new fixture is added
-        await redisClient.del('all_fixtures');
+       // await redisClient.del('all_fixtures');
 
         return res.status(201).json({
             message: 'Fixture created successfully',
@@ -66,7 +66,7 @@ export const removeFixture = async (req: Request, res: Response, next: NextFunct
         }
 
         // Invalidate the cache after a fixture is deleted
-        await redisClient.del('all_fixtures');
+        //await redisClient.del('all_fixtures');
 
         return res.status(200).json({ message: 'Fixture deleted successfully' });
     } catch (error) {
@@ -97,7 +97,7 @@ export const editFixture = async (req: Request, res: Response, next: NextFunctio
         }
 
         // Invalidate the cache after a fixture is updated
-        await redisClient.del('all_fixtures');
+        //await redisClient.del('all_fixtures');
 
         return res.status(200).json({
             message: 'Fixture updated successfully',
@@ -168,14 +168,14 @@ export const fetchAllFixtures = async (req: Request, res: Response, next: NextFu
       const redisKey = 'all_fixtures';
   
       // Check if data exists in Redis
-      const cachedData = await redisClient.get(redisKey);
-      if (cachedData) {
-        console.log('Returning cached data');
-        return res.status(200).json({
-          message: 'Fixtures retrieved successfully (cached)',
-          data: JSON.parse(cachedData),
-        });
-      }
+    //   const cachedData = await redisClient.get(redisKey);
+    //   if (cachedData) {
+    //     console.log('Returning cached data');
+    //     return res.status(200).json({
+    //       message: 'Fixtures retrieved successfully (cached)',
+    //       data: JSON.parse(cachedData),
+    //     });
+    //   }
   
       // If not in cache, fetch from MongoDB
       const fixtures = await FixtureModel.find().populate('homeTeam awayTeam');
@@ -187,7 +187,7 @@ export const fetchAllFixtures = async (req: Request, res: Response, next: NextFu
       }
   
       // Cache the fetched data for a period (e.g., 60 seconds)
-      await redisClient.set(redisKey, JSON.stringify(fixtures), 'EX', 60);
+     // await redisClient.set(redisKey, JSON.stringify(fixtures), 'EX', 60);
   
       return res.status(200).json({
         message: 'Fixtures retrieved successfully',
