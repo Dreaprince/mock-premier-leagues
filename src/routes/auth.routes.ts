@@ -1,6 +1,8 @@
 import { Router } from 'express';
-import { signup, login } from '../controllers/auth.controller';
+import { signup, login, getAllUsers } from '../controllers/auth.controller';
 import { validate } from '../middlewares/validator';
+import authMiddleware from '../middlewares/auth.middleware';
+import rolesMiddleware from '../middlewares/roles.middleware';
 
 const authRouter = Router();
 
@@ -20,6 +22,15 @@ authRouter.post('/login',  validate('login'), async (req: any, res: any, next: a
     await login(req, res, next); 
   } catch (error) {
     next(error); 
+  }
+});
+
+// Get all users (Admin only)
+authRouter.get('/users', authMiddleware, rolesMiddleware(['admin']), async (req, res, next) => {
+  try {
+    await getAllUsers(req, res, next);
+  } catch (error) {
+    next(error);
   }
 });
 

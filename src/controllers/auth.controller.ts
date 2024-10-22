@@ -108,3 +108,17 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     return next(error); // Pass the error to Express's error handler
   }
 };
+
+// Get all users (Admin only)
+export const getAllUsers = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+  try {
+    const users = await UserModel.find({}, '-password'); // Exclude passwords
+    return res.status(200).json({
+      statusCode: '00',
+      message: 'Users retrieved successfully',
+      data: users,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
