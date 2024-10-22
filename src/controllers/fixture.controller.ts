@@ -4,6 +4,7 @@ import { FixtureModel } from '../models/fixture.model';
 import { TeamModel } from '../models/team.model';
 import { v4 as uuidv4 } from 'uuid';
 import mongoose from 'mongoose';
+import redisClient from '../config/redis';
 
 // Add a new fixture (Admin only)
 export const addFixture = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
@@ -157,24 +158,39 @@ export const viewFixturesByStatus = async (req: Request, res: Response, next: Ne
 // Fetch all fixtures (Admin & User)
 export const fetchAllFixtures = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
     try {
-        // Fetch all fixtures and populate the homeTeam and awayTeam fields
-        const fixtures = await FixtureModel.find().populate('homeTeam awayTeam');
-
-        if (!fixtures || fixtures.length === 0) {
-            return res.status(404).json({
-                message: 'No fixtures found',
-            });
-        }
-
+      const redisKey = 'all_fixtures';
+  
+      // Check if data exists in Redis
+      const cachedData = await redisClient.get(redisKey);
+      if (cachedData) {
+        console.log('Returning cached data');
         return res.status(200).json({
-            message: 'Fixtures retrieved successfully',
-            data: fixtures,
+          message: 'Fixtures retrieved successfully (cached)',
+          data: JSON.parse(cachedData),
         });
+      }
+  
+      // If not in cache, fetch from MongoDB
+      const fixtures = await FixtureModel.find().populate('homeTeam awayTeam');
+  
+      if (!fixtures || fixtures.length === 0) {
+        return res.status(404).json({
+          message: 'No fixtures found',
+        });
+      }
+  
+      // Cache the fetched data for a period (e.g., 60 seconds)
+      await redisClient.set(redisKey, JSON.stringify(fixtures), 'EX', 60);
+  
+      return res.status(200).json({
+        message: 'Fixtures retrieved successfully',
+        data: fixtures,
+      });
     } catch (error) {
-        console.error('Error fetching fixtures:', error); // Log the actual error
-        return next(error);
+      console.error('Error fetching fixtures:', error); // Log the actual error
+      return next(error);
     }
-};
+  };
 
   // Update the score of a fixture (Admin only)
   export const updateFixtureScore = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
